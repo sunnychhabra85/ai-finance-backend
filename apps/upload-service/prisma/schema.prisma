@@ -1,0 +1,30 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../../generated/upload-client"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Upload {
+  id        String   @id @default(uuid())
+  userId    String
+  fileName  String
+  fileSize  Int
+  fileHash  String   @unique
+  status    UploadStatus
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+}
+
+
+
+enum UploadStatus {
+  UPLOADED
+  PROCESSING
+  DONE
+  FAILED
+}

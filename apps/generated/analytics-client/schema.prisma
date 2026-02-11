@@ -1,0 +1,31 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../../generated/analytics-client"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Transaction {
+  id          String @id @default(uuid())
+  userId      String
+  date        String
+  raw         String
+  amount      Float
+  merchant    String
+  category    String
+  type        String
+  fingerprint String
+
+  @@unique([userId, fingerprint])
+}
+
+model CategorizationMemory {
+  id       String @id @default(uuid())
+  raw      String @unique
+  merchant String
+  category String
+  type     String
+}

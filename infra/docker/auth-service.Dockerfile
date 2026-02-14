@@ -20,6 +20,9 @@ RUN npm config set fetch-retries 5 && \
 # Install dependencies
 RUN npm ci
 
+# Remove any Windows-generated Prisma clients
+RUN rm -rf apps/generated/auth-client
+
 # CRITICAL: Regenerate Prisma for Linux-musl
 RUN npx prisma generate --schema=apps/auth-service/prisma/schema.prisma
 
@@ -55,6 +58,10 @@ RUN npm ci --only=production --omit=dev && \
 COPY --from=builder --chown=nestjs:nodejs /build/apps ./apps
 COPY --from=builder --chown=nestjs:nodejs /build/packages ./packages
 
+# Copy entrypoint script
+COPY --chown=nestjs:nodejs infra/docker/entrypoint-auth.sh /app/entrypoint.sh
+RUN chmod +x /app/entrypoint.sh
+
 # Clean up source code
 RUN rm -rf apps/*/src packages/*/src
 
@@ -65,4 +72,4 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=40s --retries=3 \
 
 EXPOSE 3001
 
-CMD ["node", "apps/auth-service/dist/main.js"]
+CMD ["/app/entrypoint.sh"]

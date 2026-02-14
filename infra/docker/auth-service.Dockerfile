@@ -1,20 +1,29 @@
 # ============================================
-# Stage 1: Build
+# Stage 1: Builder
 # ============================================
 FROM node:20-alpine AS builder
 
 WORKDIR /build
 
-# Copy monorepo files
+# Copy monorepo structure
 COPY package*.json ./
 COPY tsconfig.base.json ./
-COPY apps/auth-service ./apps/auth-service
+COPY apps ./apps
 COPY packages ./packages
+
+# Configure npm for better network resilience
+RUN npm config set fetch-retries 5 && \
+    npm config set fetch-retry-mintimeout 20000 && \
+    npm config set fetch-retry-maxtimeout 120000 && \
+    npm config set fetch-timeout 300000
 
 # Install dependencies
 RUN npm ci
 
-# Build only the auth-service
+# CRITICAL: Regenerate Prisma for Linux-musl
+RUN npx prisma generate --schema=apps/auth-service/prisma/schema.prisma
+
+# Build the service
 RUN npm run build --workspace=apps/auth-service
 
 # ============================================
@@ -24,31 +33,36 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-# Create non-root user for security
+# Install OpenSSL for Prisma
+RUN apk add --no-cache openssl
+
 RUN addgroup -g 1001 -S nodejs && \
     adduser -S nestjs -u 1001
 
-# Copy package files
 COPY package*.json ./
 
-# Install production dependencies only (no dev dependencies)
-RUN npm ci --only=production && \
+# Configure npm for better network resilience
+RUN npm config set fetch-retries 5 && \
+    npm config set fetch-retry-mintimeout 20000 && \
+    npm config set fetch-retry-maxtimeout 120000 && \
+    npm config set fetch-timeout 300000
+
+# Install production dependencies only
+RUN npm ci --only=production --omit=dev && \
     npm cache clean --force
 
-# Copy built application from builder stage
-COPY --from=builder /build/apps/auth-service/dist ./dist
+# Copy built application and generated clients from builder
+COPY --from=builder --chown=nestjs:nodejs /build/apps ./apps
+COPY --from=builder --chown=nestjs:nodejs /build/packages ./packages
 
-# Copy Prisma schema for runtime
-COPY --from=builder /build/apps/auth-service/prisma ./prisma
-COPY --chown=nestjs:nodejs . .
+# Clean up source code
+RUN rm -rf apps/*/src packages/*/src
 
-# Switch to non-root user
 USER nestjs
 
-# Health check
 HEALTHCHECK --interval=30s --timeout=3s --start-period=40s --retries=3 \
-    CMD node -e "require('http').get('http://localhost:3001/health', (r) => {if (r.statusCode !== 200) throw new Error(r.statusCode)})"
+    CMD node -e "require('http').get('http://localhost:3001/health', (r) => {if (r.statusCode !== 200) throw new Error(r.statusCode)})" || exit 1
 
 EXPOSE 3001
 
-CMD ["node", "dist/main.js"]
+CMD ["node", "apps/auth-service/dist/main.js"]

@@ -19,6 +19,8 @@ async function bootstrap() {
 
   app.enableCors({ origin: '*' });
 
-  await app.listen(3003, '0.0.0.0');
+  const port = process.env.PORT || 3002;
+  await app.listen(port, '0.0.0.0');
+  console.log(`Upload service listening on port ${port}`);
 }
 bootstrap();

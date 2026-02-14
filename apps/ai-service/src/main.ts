@@ -4,6 +4,8 @@ import { AppModule } from './app.module';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.enableCors({ origin: '*' });
-  await app.listen(3005);
+  const port = process.env.PORT || 3005;
+  await app.listen(port, '0.0.0.0');
+  console.log(`AI service listening on port ${port}`);
 }
 bootstrap();

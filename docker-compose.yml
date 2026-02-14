@@ -1,0 +1,3 @@
+# Simple wrapper that includes the main compose file
+include:
+  - infra/docker-compose/docker-compose.yml

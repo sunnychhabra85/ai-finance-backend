@@ -25,7 +25,10 @@
     "prisma:generate": "prisma generate",
     "prisma:migrate:dev": "prisma migrate dev",
     "prisma:migrate:deploy": "prisma migrate deploy",
-    "prisma:studio": "prisma studio"
+    "prisma:studio": "prisma studio",
+    "auth:studio": "prisma studio --schema=apps/auth-service/prisma/schema.prisma",
+    "upload:studio": "prisma studio --schema=apps/upload-service/prisma/schema.prisma",
+    "analytics:studio": "prisma studio --schema=apps/analytics-service/prisma/schema.prisma"
   },
   "keywords": [],
   "author": "",

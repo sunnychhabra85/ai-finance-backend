@@ -1,0 +1,49 @@
+# ============================================
+# Stage 1: Builder
+# ============================================
+FROM node:20-alpine AS builder
+
+WORKDIR /build
+
+# Copy entire monorepo structure
+COPY . .
+
+# Install all dependencies (including dev for building)
+RUN npm ci
+
+# Build all workspaces
+RUN npm run build
+
+# ============================================
+# Stage 2: Runtime (Slim)
+# ============================================
+FROM node:20-alpine
+
+WORKDIR /app
+
+# Create non-root user
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S nestjs -u 1001
+
+# Copy entire monorepo structure from builder (THIS IS THE KEY!)
+COPY --from=builder --chown=nestjs:nodejs /build .
+
+# Remove dev dependencies from node_modules
+# Keep only production dependencies
+RUN npm ci --only=production --omit=dev && \
+    npm cache clean --force
+
+# Remove source files (keep only dist)
+RUN rm -rf apps/*/src \
+    && rm -rf packages/*/src \
+    && rm -rf .github \
+    && rm -rf infra
+
+USER nestjs
+
+HEALTHCHECK --interval=30s --timeout=3s --start-period=40s --retries=3 \
+    CMD node -e "require('http').get('http://localhost:${PORT:-3000}/health', (r) => {if (r.statusCode !== 200) throw new Error(r.statusCode)})" || exit 1
+
+EXPOSE ${PORT:-3000}
+
+CMD ["node", "dist/main.js"]

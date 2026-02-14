@@ -4,36 +4,60 @@ WORKDIR /build
 
 COPY package*.json ./
 COPY tsconfig.base.json ./
-COPY apps/upload-service ./apps/upload-service
+COPY apps ./apps
 COPY packages ./packages
 
+# Configure npm for better network resilience
+RUN npm config set fetch-retries 5 && \
+    npm config set fetch-retry-mintimeout 20000 && \
+    npm config set fetch-retry-maxtimeout 120000 && \
+    npm config set fetch-timeout 300000
+
 RUN npm ci
+
+# Remove any Windows-generated Prisma clients
+RUN rm -rf apps/generated/upload-client
+
+# Regenerate Prisma for Linux
+RUN npx prisma generate --schema=apps/upload-service/prisma/schema.prisma
+
 RUN npm run build --workspace=apps/upload-service
 
-# ============================================
-# Stage 2: Runtime
-# ============================================
 FROM node:20-alpine
 
 WORKDIR /app
+
+# Install OpenSSL for Prisma
+RUN apk add --no-cache openssl
 
 RUN addgroup -g 1001 -S nodejs && \
     adduser -S nestjs -u 1001
 
 COPY package*.json ./
 
-RUN npm ci --only=production && \
+# Configure npm for better network resilience
+RUN npm config set fetch-retries 5 && \
+    npm config set fetch-retry-mintimeout 20000 && \
+    npm config set fetch-retry-maxtimeout 120000 && \
+    npm config set fetch-timeout 300000
+
+RUN npm ci --only=production --omit=dev && \
     npm cache clean --force
 
-COPY --from=builder /build/apps/upload-service/dist ./dist
-COPY --from=builder /build/apps/upload-service/prisma ./prisma
-COPY --chown=nestjs:nodejs . .
+COPY --from=builder --chown=nestjs:nodejs /build/apps ./apps
+COPY --from=builder --chown=nestjs:nodejs /build/packages ./packages
+
+# Copy entrypoint script
+COPY --chown=nestjs:nodejs infra/docker/entrypoint-upload.sh /app/entrypoint.sh
+RUN chmod +x /app/entrypoint.sh
+
+RUN rm -rf apps/*/src packages/*/src
 
 USER nestjs
 
 HEALTHCHECK --interval=30s --timeout=3s --start-period=40s --retries=3 \
-    CMD node -e "require('http').get('http://localhost:3002/health', (r) => {if (r.statusCode !== 200) throw new Error(r.statusCode)})"
+    CMD node -e "require('http').get('http://localhost:3002/health', (r) => {if (r.statusCode !== 200) throw new Error(r.statusCode)})" || exit 1
 
 EXPOSE 3002
 
-CMD ["node", "dist/main.js"]
+CMD ["/app/entrypoint.sh"]

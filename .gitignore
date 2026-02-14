@@ -2,7 +2,9 @@
 /dist
 dist/
 /node_modules
+node_modules/
 /build
+*.tsbuildinfo
 
 # Logs
 logs
@@ -15,10 +17,12 @@ lerna-debug.log*
 
 # OS
 .DS_Store
+Thumbs.db
 
 # Tests
 /coverage
 /.nyc_output
+*.lcov
 
 # IDEs and editors
 /.idea
@@ -28,6 +32,9 @@ lerna-debug.log*
 *.launch
 .settings/
 *.sublime-workspace
+*.swp
+*.swo
+*~
 
 # IDE - VSCode
 .vscode/*
@@ -42,6 +49,8 @@ lerna-debug.log*
 .env.test.local
 .env.production.local
 .env.local
+*.env
+!.env.example
 
 # temp directory
 .temp
@@ -56,6 +65,47 @@ pids
 # Diagnostic reports (https://nodejs.org/api/report.html)
 report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 
-/generated/prisma
+# Prisma generated clients (auto-generated, should not be committed)
+apps/generated/
+apps/*/generated/
+**/generated/*-client/
 
-/generated/prisma
+# Prisma migrations (keep schema.prisma and migrations/, but ignore local DB)
+*.db
+*.db-journal
+*.sqlite
+*.sqlite3
+
+# Uploaded files (runtime data)
+uploads/
+**/uploads/
+apps/*/uploads/
+
+# Docker volumes and data
+docker-compose.override.yml
+.docker/
+postgres_data/
+**/postgres_data/
+
+# Build outputs
+*.js.map
+apps/*/dist/
+packages/*/dist/
+
+# Package manager
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+.pnpm-store/
+.yarn/
+!.yarn/releases
+!.yarn/plugins
+
+# MacOS
+.AppleDouble
+.LSOverride
+
+# Debug
+.vscode-test
+debug.log
+apps/generated/analytics-client/edge.js

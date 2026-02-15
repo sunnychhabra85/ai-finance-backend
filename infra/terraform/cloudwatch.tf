@@ -1,34 +1,21 @@
-# CloudWatch Log Group for EKS
+# ============================================
+# CloudWatch Log Group for EKS Cluster
+# ============================================
 resource "aws_cloudwatch_log_group" "eks_cluster" {
   name              = "/aws/eks/${aws_eks_cluster.main.name}"
-  retention_in_days = 7
+  retention_in_days = 7  # COST-OPTIMIZED: Keep logs for 7 days only
+  # PRODUCTION: retention_in_days = 30  # Keep for 30 days
 
   tags = {
     Name = "${var.project_name}-eks-logs-${var.environment}"
   }
 }
 
-# CloudWatch Log Group for RDS
-resource "aws_db_parameter_group" "postgres" {
-  name_prefix = "${var.project_name}-postgres-"
-  family      = "postgres${split(".", var.rds_engine_version)[0]}"
+# ============================================
+# CloudWatch Alarms (FREE - Important for monitoring)
+# ============================================
 
-  parameter {
-    name  = "log_statement"
-    value = "all"
-  }
-
-  parameter {
-    name  = "log_min_duration_statement"
-    value = "1000"
-  }
-
-  tags = {
-    Name = "${var.project_name}-postgres-params-${var.environment}"
-  }
-}
-
-# CloudWatch Alarms for EKS Node Group
+# EKS Cluster - Node CPU Alert
 resource "aws_cloudwatch_metric_alarm" "eks_nodes_cpu" {
   alarm_name          = "${var.project_name}-eks-nodes-high-cpu-${var.environment}"
   comparison_operator = "GreaterThanThreshold"
@@ -41,12 +28,15 @@ resource "aws_cloudwatch_metric_alarm" "eks_nodes_cpu" {
   alarm_description   = "Alert when EKS nodes CPU exceeds 80%"
   treat_missing_data  = "notBreaching"
 
-  dimensions = {
-    InstanceId = aws_eks_node_group.main.id
+  # Uncomment to add SNS notification
+  # alarm_actions = [aws_sns_topic.alerts.arn]
+
+  tags = {
+    Name = "${var.project_name}-eks-cpu-alarm-${var.environment}"
   }
 }
 
-# CloudWatch Alarms for RDS
+# RDS Database - CPU Alert
 resource "aws_cloudwatch_metric_alarm" "rds_cpu" {
   alarm_name          = "${var.project_name}-rds-high-cpu-${var.environment}"
   comparison_operator = "GreaterThanThreshold"
@@ -62,8 +52,13 @@ resource "aws_cloudwatch_metric_alarm" "rds_cpu" {
   dimensions = {
     DBInstanceIdentifier = aws_db_instance.main.id
   }
+
+  tags = {
+    Name = "${var.project_name}-rds-cpu-alarm-${var.environment}"
+  }
 }
 
+# RDS Database - Storage Alert
 resource "aws_cloudwatch_metric_alarm" "rds_storage" {
   alarm_name          = "${var.project_name}-rds-low-storage-${var.environment}"
   comparison_operator = "LessThanThreshold"
@@ -73,10 +68,33 @@ resource "aws_cloudwatch_metric_alarm" "rds_storage" {
   period              = 300
   statistic           = "Average"
   threshold           = 2147483648  # 2GB
-  alarm_description   = "Alert when RDS storage is below 2GB"
+  alarm_description   = "Alert when RDS storage below 2GB"
   treat_missing_data  = "notBreaching"
 
   dimensions = {
     DBInstanceIdentifier = aws_db_instance.main.id
   }
+
+  tags = {
+    Name = "${var.project_name}-rds-storage-alarm-${var.environment}"
+  }
 }
+
+# ============================================
+# Optional: SNS Topic for Alarm Notifications
+# ============================================
+# Uncomment to receive email alerts when alarms trigger
+
+# resource "aws_sns_topic" "alerts" {
+#   name = "${var.project_name}-alerts-${var.environment}"
+# 
+#   tags = {
+#     Name = "${var.project_name}-alerts-${var.environment}"
+#   }
+# }
+# 
+# resource "aws_sns_topic_subscription" "alerts_email" {
+#   topic_arn = aws_sns_topic.alerts.arn
+#   protocol  = "email"
+#   endpoint  = "your-email@example.com"  # Change this!
+# }

@@ -9,8 +9,8 @@ resource "aws_lb" "main" {
   security_groups    = [aws_security_group.alb.id]
   subnets            = aws_subnet.public[*].id
 
-  enable_deletion_protection = var.environment == "prod" ? true : false
-  enable_http2              = true
+  enable_deletion_protection       = var.environment == "prod" ? true : false
+  enable_http2                     = true
   enable_cross_zone_load_balancing = true
 
   tags = {
@@ -263,27 +263,4 @@ resource "aws_lb_listener_rule" "ai_service" {
       values = ["/api/ai*"]
     }
   }
-}
-
-# ============================================
-# Outputs
-# ============================================
-output "alb_dns_name" {
-  description = "DNS name of the Application Load Balancer"
-  value       = aws_lb.main.dns_name
-}
-
-output "alb_arn" {
-  description = "ARN of the Application Load Balancer"
-  value       = aws_lb.main.arn
-}
-
-output "alb_zone_id" {
-  description = "Zone ID of the ALB (for Route 53)"
-  value       = aws_lb.main.zone_id
-}
-
-output "alb_url" {
-  description = "URL to access the ALB"
-  value       = "http://${aws_lb.main.dns_name}"
 }

@@ -60,28 +60,28 @@ variable "eks_cluster_version" {
 variable "eks_desired_size" {
   description = "Desired number of worker nodes"
   type        = number
-  default     = 1  # COST-OPTIMIZED
+  default     = 1 # COST-OPTIMIZED
   # PRODUCTION: default = 3
 }
 
 variable "eks_min_size" {
   description = "Minimum number of worker nodes"
   type        = number
-  default     = 1  # COST-OPTIMIZED
+  default     = 1 # COST-OPTIMIZED
   # PRODUCTION: default = 2
 }
 
 variable "eks_max_size" {
   description = "Maximum number of worker nodes (auto-scaling limit)"
   type        = number
-  default     = 3  # Allow small scale-up
+  default     = 3 # Allow small scale-up
   # PRODUCTION: default = 20
 }
 
 variable "eks_instance_types" {
   description = "EC2 instance types for worker nodes"
   type        = list(string)
-  default     = ["t3.small"]  # COST-OPTIMIZED: $18/month
+  default     = ["t3.small"] # COST-OPTIMIZED: $18/month
   # PRODUCTION OPTIONS:
   # default = ["m5.large"]     # $70/month (better CPU)
   # default = ["m5.xlarge"]    # $140/month (more memory)
@@ -91,7 +91,7 @@ variable "eks_instance_types" {
 variable "eks_capacity_type" {
   description = "Capacity type (ON_DEMAND or SPOT)"
   type        = string
-  default     = "ON_DEMAND"  # Reliable for demo
+  default     = "ON_DEMAND" # Reliable for demo
   # PRODUCTION (BUDGET): default = "SPOT"  # Saves 70% but can be interrupted
 }
 
@@ -107,7 +107,7 @@ variable "rds_engine_version" {
 variable "rds_instance_class" {
   description = "RDS instance class"
   type        = string
-  default     = "db.t3.micro"  # COST-OPTIMIZED: FREE for 12 months
+  default     = "db.t3.micro" # COST-OPTIMIZED: FREE for 12 months
   # PRODUCTION OPTIONS:
   # default = "db.t3.small"    # $17/month (2GB RAM)
   # default = "db.r5.large"    # $266/month (16GB RAM, optimized)
@@ -117,21 +117,21 @@ variable "rds_instance_class" {
 variable "rds_allocated_storage" {
   description = "Allocated storage in GB"
   type        = number
-  default     = 20  # FREE with AWS Free Tier
+  default     = 20 # FREE with AWS Free Tier
   # PRODUCTION: default = 100  # Larger storage
 }
 
 variable "rds_backup_retention_period" {
   description = "Backup retention in days"
   type        = number
-  default     = 1  # COST-OPTIMIZED: Minimal backups
+  default     = 1 # COST-OPTIMIZED: Minimal backups
   # PRODUCTION: default = 30  # Keep 30 days of backups
 }
 
 variable "rds_multi_az" {
   description = "Enable Multi-AZ (high availability)"
   type        = bool
-  default     = false  # COST-OPTIMIZED: Single AZ only
+  default     = false # COST-OPTIMIZED: Single AZ only
   # PRODUCTION: default = true  # Adds $18/month but much safer
 }
 
@@ -164,7 +164,7 @@ variable "database_password" {
 variable "s3_bucket_versioning" {
   description = "Enable S3 versioning (costs extra)"
   type        = bool
-  default     = false  # COST-OPTIMIZED
+  default     = false # COST-OPTIMIZED
   # PRODUCTION: default = true
 }
 
@@ -180,7 +180,7 @@ variable "s3_bucket_encryption" {
 variable "enable_nat_gateway" {
   description = "Enable NAT Gateway (costs $32.40/month per AZ)"
   type        = bool
-  default     = false  # COST-OPTIMIZED: Use VPC Endpoints instead
+  default     = false # COST-OPTIMIZED: Use VPC Endpoints instead
   # PRODUCTION: default = true
 }
 
@@ -191,8 +191,8 @@ variable "common_tags" {
   description = "Common tags for all resources"
   type        = map(string)
   default = {
-    Project     = "ai-finance"
-    ManagedBy   = "Terraform"
-    CreatedAt   = "2026-02-15"
+    Project   = "ai-finance"
+    ManagedBy = "Terraform"
+    CreatedAt = "2026-02-15"
   }
 }

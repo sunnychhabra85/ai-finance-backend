@@ -31,10 +31,10 @@ resource "aws_iam_role_policy_attachment" "eks_cluster_policy" {
 # EKS Cluster
 # ============================================
 resource "aws_eks_cluster" "main" {
-  name            = "${var.project_name}-eks-${var.environment}"
-  role_arn        = aws_iam_role.eks_cluster.arn
-  version         = var.eks_cluster_version
-  
+  name     = "${var.project_name}-eks-${var.environment}"
+  role_arn = aws_iam_role.eks_cluster.arn
+  version  = var.eks_cluster_version
+
   # Enable cluster logging for troubleshooting
   enabled_cluster_log_types = ["api", "audit", "authenticator", "controllerManager", "scheduler"]
 
@@ -174,27 +174,4 @@ resource "aws_iam_openid_connect_provider" "eks" {
   tags = {
     Name = "${var.project_name}-eks-irsa-${var.environment}"
   }
-}
-
-# ============================================
-# Outputs
-# ============================================
-output "eks_cluster_name" {
-  description = "EKS Cluster name"
-  value       = aws_eks_cluster.main.name
-}
-
-output "eks_cluster_endpoint" {
-  description = "EKS Cluster API endpoint"
-  value       = aws_eks_cluster.main.endpoint
-}
-
-output "eks_cluster_arn" {
-  description = "EKS Cluster ARN"
-  value       = aws_eks_cluster.main.arn
-}
-
-output "configure_kubectl" {
-  description = "Command to configure kubectl"
-  value       = "aws eks update-kubeconfig --name ${aws_eks_cluster.main.name} --region ${var.aws_region}"
 }

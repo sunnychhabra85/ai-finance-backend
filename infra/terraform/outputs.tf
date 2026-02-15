@@ -91,6 +91,7 @@ output "rds_database_name" {
 output "rds_database_username" {
   description = "RDS database username"
   value       = aws_db_instance.main.username
+  sensitive   = true
 }
 
 output "rds_instance_id" {
@@ -352,15 +353,15 @@ output "useful_commands" {
 output "summary" {
   description = "Summary of created infrastructure"
   value = {
-    cluster_name        = aws_eks_cluster.main.name
-    cluster_version     = aws_eks_cluster.main.version
-    database_host       = aws_db_instance.main.address
-    database_name       = aws_db_instance.main.db_name
-    s3_bucket           = aws_s3_bucket.uploads.id
-    alb_dns             = aws_lb.main.dns_name
-    ecr_registry        = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${var.aws_region}.amazonaws.com"
-    aws_account         = data.aws_caller_identity.current.account_id
-    region              = var.aws_region
-    environment         = var.environment
+    cluster_name    = aws_eks_cluster.main.name
+    cluster_version = aws_eks_cluster.main.version
+    database_host   = aws_db_instance.main.address
+    database_name   = aws_db_instance.main.db_name
+    s3_bucket       = aws_s3_bucket.uploads.id
+    alb_dns         = aws_lb.main.dns_name
+    ecr_registry    = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${var.aws_region}.amazonaws.com"
+    aws_account     = data.aws_caller_identity.current.account_id
+    region          = var.aws_region
+    environment     = var.environment
   }
 }

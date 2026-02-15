@@ -31,7 +31,7 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "uploads" {
 
   rule {
     apply_server_side_encryption_by_default {
-      sse_algorithm = "AES256"  # Free encryption
+      sse_algorithm = "AES256" # Free encryption
       # PRODUCTION: Use KMS for better security (costs extra)
       # sse_algorithm = "aws:kms"
       # kms_master_key_id = aws_kms_key.s3.arn
@@ -62,6 +62,9 @@ resource "aws_s3_bucket_lifecycle_configuration" "uploads" {
     id     = "delete-old-uploads"
     status = "Enabled"
 
+    # Apply to all objects
+    filter {}
+
     # Delete uploaded files after 90 days
     expiration {
       days = 90
@@ -84,11 +87,11 @@ resource "aws_s3_bucket_policy" "uploads" {
     Version = "2012-10-17"
     Statement = [
       {
-        Sid    = "DenyUnencryptedObjectUploads"
-        Effect = "Deny"
+        Sid       = "DenyUnencryptedObjectUploads"
+        Effect    = "Deny"
         Principal = "*"
-        Action   = "s3:PutObject"
-        Resource = "${aws_s3_bucket.uploads.arn}/*"
+        Action    = "s3:PutObject"
+        Resource  = "${aws_s3_bucket.uploads.arn}/*"
         Condition = {
           StringNotEquals = {
             "s3:x-amz-server-side-encryption" = "AES256"
@@ -114,17 +117,4 @@ resource "aws_s3_bucket_policy" "uploads" {
       }
     ]
   })
-}
-
-# ============================================
-# Outputs
-# ============================================
-output "s3_bucket_name" {
-  description = "S3 bucket name"
-  value       = aws_s3_bucket.uploads.id
-}
-
-output "s3_bucket_arn" {
-  description = "S3 bucket ARN"
-  value       = aws_s3_bucket.uploads.arn
 }

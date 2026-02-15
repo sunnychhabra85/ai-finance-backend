@@ -3,7 +3,7 @@
 # ============================================
 resource "aws_cloudwatch_log_group" "eks_cluster" {
   name              = "/aws/eks/${aws_eks_cluster.main.name}"
-  retention_in_days = 7  # COST-OPTIMIZED: Keep logs for 7 days only
+  retention_in_days = 7 # COST-OPTIMIZED: Keep logs for 7 days only
   # PRODUCTION: retention_in_days = 30  # Keep for 30 days
 
   tags = {
@@ -67,7 +67,7 @@ resource "aws_cloudwatch_metric_alarm" "rds_storage" {
   namespace           = "AWS/RDS"
   period              = 300
   statistic           = "Average"
-  threshold           = 2147483648  # 2GB
+  threshold           = 2147483648 # 2GB
   alarm_description   = "Alert when RDS storage below 2GB"
   treat_missing_data  = "notBreaching"
 

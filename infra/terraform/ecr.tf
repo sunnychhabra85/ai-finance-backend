@@ -40,9 +40,9 @@ resource "aws_ecr_lifecycle_policy" "services" {
         rulePriority = 1
         description  = "Keep last 10 images"
         selection = {
-          tagStatus     = "any"
-          countType     = "imageCountMoreThan"
-          countNumber   = 10
+          tagStatus   = "any"
+          countType   = "imageCountMoreThan"
+          countNumber = 10
         }
         action = {
           type = "expire"
@@ -50,24 +50,4 @@ resource "aws_ecr_lifecycle_policy" "services" {
       }
     ]
   })
-}
-
-# ============================================
-# Outputs
-# ============================================
-output "ecr_repositories" {
-  description = "ECR repository URLs"
-  value = {
-    for service, repo in aws_ecr_repository.services :
-    service => {
-      url        = repo.repository_url
-      arn        = repo.arn
-      registry   = repo.registry_id
-    }
-  }
-}
-
-output "ecr_registry_url" {
-  description = "ECR registry base URL"
-  value       = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${var.aws_region}.amazonaws.com"
 }

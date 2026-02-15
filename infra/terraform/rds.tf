@@ -21,7 +21,7 @@ resource "aws_db_instance" "main" {
 
   # Storage configuration
   allocated_storage = var.rds_allocated_storage
-  storage_type      = "gp3"  # General Purpose (most cost-effective)
+  storage_type      = "gp3" # General Purpose (most cost-effective)
   storage_encrypted = true
 
   # Database
@@ -47,9 +47,9 @@ resource "aws_db_instance" "main" {
   multi_az = var.rds_multi_az
 
   # Access control
-  publicly_accessible = false
+  publicly_accessible   = false
   copy_tags_to_snapshot = true
-  deletion_protection = var.environment == "prod" ? true : false
+  deletion_protection   = var.environment == "prod" ? true : false
 
   # Performance Insights (OPTIONAL - costs extra)
   # Uncomment for production monitoring:
@@ -59,33 +59,4 @@ resource "aws_db_instance" "main" {
   tags = {
     Name = "${var.project_name}-postgres-${var.environment}"
   }
-}
-
-# ============================================
-# Outputs
-# ============================================
-output "rds_endpoint" {
-  description = "RDS endpoint with port"
-  value       = aws_db_instance.main.endpoint
-}
-
-output "rds_address" {
-  description = "RDS hostname only"
-  value       = aws_db_instance.main.address
-}
-
-output "rds_port" {
-  description = "RDS port"
-  value       = aws_db_instance.main.port
-}
-
-output "rds_database_name" {
-  description = "RDS database name"
-  value       = aws_db_instance.main.db_name
-}
-
-output "database_connection_string" {
-  description = "Full PostgreSQL connection string"
-  value       = "postgresql://${var.database_username}:${var.database_password}@${aws_db_instance.main.address}:${aws_db_instance.main.port}/${var.database_name}"
-  sensitive   = true
 }

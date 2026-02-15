@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: analytics-service
+  namespace: ai-finance
+  labels:
+    app: analytics-service
+spec:
+  type: ClusterIP
+  ports:
+  - name: http
+    port: 3004
+    targetPort: 3004
+    protocol: TCP
+  selector:
+    app: analytics-service

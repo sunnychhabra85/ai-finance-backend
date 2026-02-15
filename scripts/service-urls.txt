@@ -1,0 +1,23 @@
+Service URLs
+============
+
+auth-service:
+  URL: http://a0527e3012894420481ec166770fd6a1-190939566.us-east-1.elb.amazonaws.com
+  Health: http://a0527e3012894420481ec166770fd6a1-190939566.us-east-1.elb.amazonaws.com/health
+
+upload-service:
+  URL: http://a48fb8413287c4227aee458a0cdddb5f-1509224592.us-east-1.elb.amazonaws.com
+  Health: http://a48fb8413287c4227aee458a0cdddb5f-1509224592.us-east-1.elb.amazonaws.com/health
+
+parser-worker:
+  URL: http://a89c63785778648fb8ee9561d1f70912-933930901.us-east-1.elb.amazonaws.com
+  Health: http://a89c63785778648fb8ee9561d1f70912-933930901.us-east-1.elb.amazonaws.com/health
+
+analytics-service:
+  URL: http://ab16885af3db041c69e7caa1e6c56110-733357905.us-east-1.elb.amazonaws.com
+  Health: http://ab16885af3db041c69e7caa1e6c56110-733357905.us-east-1.elb.amazonaws.com/health
+
+ai-service:
+  URL: http://af24d4aaab4b14078a1f5ef0235bf205-1287623852.us-east-1.elb.amazonaws.com
+  Health: http://af24d4aaab4b14078a1f5ef0235bf205-1287623852.us-east-1.elb.amazonaws.com/health
+

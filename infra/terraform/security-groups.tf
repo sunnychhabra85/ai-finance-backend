@@ -68,13 +68,31 @@ resource "aws_security_group" "rds" {
   vpc_id      = aws_vpc.main.id
   description = "Security group for RDS database"
 
-  # Allow PostgreSQL from EKS nodes only
+  # Allow PostgreSQL from EKS nodes
   ingress {
     from_port       = 5432
     to_port         = 5432
     protocol        = "tcp"
     security_groups = [aws_security_group.eks_nodes.id]
     description     = "Allow PostgreSQL from EKS nodes"
+  }
+
+  # Allow PostgreSQL from EKS cluster security group (for pod networking)
+  ingress {
+    from_port       = 5432
+    to_port         = 5432
+    protocol        = "tcp"
+    security_groups = [aws_security_group.eks_cluster.id]
+    description     = "Allow PostgreSQL from EKS cluster"
+  }
+
+  # Allow PostgreSQL from entire VPC CIDR (fallback for pod networking)
+  ingress {
+    from_port   = 5432
+    to_port     = 5432
+    protocol    = "tcp"
+    cidr_blocks = [var.vpc_cidr]
+    description = "Allow PostgreSQL from VPC CIDR"
   }
 
   # Allow outbound to everything

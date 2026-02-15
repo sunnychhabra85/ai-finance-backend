@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-config-prod
+  namespace: ai-finance
+data:
+  NODE_ENV: "production"
+  LOG_LEVEL: "warn"
+  JWT_EXPIRATION: "24h"
+  POSTGRES_HOST: "postgres.ai-finance.svc.cluster.local"
+  POSTGRES_PORT: "5432"
+  POSTGRES_USER: "postgres"
+  AWS_REGION: "us-east-1"
+  AWS_S3_BUCKET: "ai-finance-uploads-prod"
+  KAFKA_BROKERS: "kafka.ai-finance.svc.cluster.local:9092"
+  KAFKA_TOPIC_FILE_UPLOADED: "file.uploaded"
+  KAFKA_TOPIC_CATEGORIZED: "transaction.categorized"
+  AUTH_SERVICE_URL: "http://auth-service.ai-finance.svc.cluster.local:3001"
+  UPLOAD_SERVICE_URL: "http://upload-service.ai-finance.svc.cluster.local:3002"
+  PARSER_WORKER_URL: "http://parser-worker.ai-finance.svc.cluster.local:3003"
+  ANALYTICS_SERVICE_URL: "http://analytics-service.ai-finance.svc.cluster.local:3004"
+  AI_SERVICE_URL: "http://ai-service.ai-finance.svc.cluster.local:3005"

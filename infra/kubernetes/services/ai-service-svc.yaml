@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: ai-service
+  namespace: ai-finance
+  labels:
+    app: ai-service
+spec:
+  type: ClusterIP
+  ports:
+  - name: http
+    port: 3005
+    targetPort: 3005
+    protocol: TCP
+  selector:
+    app: ai-service

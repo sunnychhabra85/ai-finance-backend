@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: parser-worker
+  namespace: ai-finance
+  labels:
+    app: parser-worker
+spec:
+  type: ClusterIP
+  ports:
+  - name: http
+    port: 3003
+    targetPort: 3003
+    protocol: TCP
+  selector:
+    app: parser-worker

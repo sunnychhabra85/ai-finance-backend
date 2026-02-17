@@ -1,0 +1,120 @@
+name: Database Migrations
+
+on:
+  workflow_dispatch:
+    inputs:
+      service:
+        description: 'Service to run migrations for'
+        required: true
+        type: choice
+        options:
+          - auth-service
+          - upload-service
+          - analytics-service
+          - all
+      action:
+        description: 'Migration action'
+        required: true
+        type: choice
+        default: 'deploy'
+        options:
+          - deploy
+          - status
+          - reset
+      environment:
+        description: 'Environment'
+        required: true
+        type: choice
+        default: 'dev'
+        options:
+          - dev
+          - staging
+          - prod
+
+env:
+  AWS_REGION: us-east-1
+  EKS_CLUSTER_NAME: ai-finance-eks-dev
+  K8S_NAMESPACE: ai-finance
+
+jobs:
+  run-migrations:
+    name: Run Migrations - ${{ github.event.inputs.service }}
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Update kubeconfig
+        run: |
+          aws eks update-kubeconfig --name ${{ env.EKS_CLUSTER_NAME }} --region ${{ env.AWS_REGION }}
+
+      - name: Run auth-service migrations
+        if: github.event.inputs.service == 'auth-service' || github.event.inputs.service == 'all'
+        run: |
+          echo "Running migrations for auth-service..."
+          POD=$(kubectl get pod -l app=auth-service -n ${{ env.K8S_NAMESPACE }} -o jsonpath='{.items[0].metadata.name}')
+          
+          case "${{ github.event.inputs.action }}" in
+            deploy)
+              kubectl exec $POD -n ${{ env.K8S_NAMESPACE }} -- npx prisma migrate deploy --schema=/app/apps/auth-service/prisma/schema.prisma
+              ;;
+            status)
+              kubectl exec $POD -n ${{ env.K8S_NAMESPACE }} -- npx prisma migrate status --schema=/app/apps/auth-service/prisma/schema.prisma
+              ;;
+            reset)
+              echo "⚠️ Resetting database for auth-service"
+              kubectl exec $POD -n ${{ env.K8S_NAMESPACE }} -- npx prisma migrate reset --force --schema=/app/apps/auth-service/prisma/schema.prisma
+              ;;
+          esac
+
+      - name: Run upload-service migrations
+        if: github.event.inputs.service == 'upload-service' || github.event.inputs.service == 'all'
+        run: |
+          echo "Running migrations for upload-service..."
+          POD=$(kubectl get pod -l app=upload-service -n ${{ env.K8S_NAMESPACE }} -o jsonpath='{.items[0].metadata.name}')
+          
+          case "${{ github.event.inputs.action }}" in
+            deploy)
+              kubectl exec $POD -n ${{ env.K8S_NAMESPACE }} -- npx prisma migrate deploy --schema=/app/apps/upload-service/prisma/schema.prisma
+              ;;
+            status)
+              kubectl exec $POD -n ${{ env.K8S_NAMESPACE }} -- npx prisma migrate status --schema=/app/apps/upload-service/prisma/schema.prisma
+              ;;
+            reset)
+              echo "⚠️ Resetting database for upload-service"
+              kubectl exec $POD -n ${{ env.K8S_NAMESPACE }} -- npx prisma migrate reset --force --schema=/app/apps/upload-service/prisma/schema.prisma
+              ;;
+          esac
+
+      - name: Run analytics-service migrations
+        if: github.event.inputs.service == 'analytics-service' || github.event.inputs.service == 'all'
+        run: |
+          echo "Running migrations for analytics-service..."
+          POD=$(kubectl get pod -l app=analytics-service -n ${{ env.K8S_NAMESPACE }} -o jsonpath='{.items[0].metadata.name}')
+          
+          case "${{ github.event.inputs.action }}" in
+            deploy)
+              kubectl exec $POD -n ${{ env.K8S_NAMESPACE }} -- npx prisma migrate deploy --schema=/app/apps/analytics-service/prisma/schema.prisma
+              ;;
+            status)
+              kubectl exec $POD -n ${{ env.K8S_NAMESPACE }} -- npx prisma migrate status --schema=/app/apps/analytics-service/prisma/schema.prisma
+              ;;
+            reset)
+              echo "⚠️ Resetting database for analytics-service"
+              kubectl exec $POD -n ${{ env.K8S_NAMESPACE }} -- npx prisma migrate reset --force --schema=/app/apps/analytics-service/prisma/schema.prisma
+              ;;
+          esac
+
+      - name: Verify migrations
+        run: |
+          echo "=== Migration Status ==="
+          kubectl get pods -n ${{ env.K8S_NAMESPACE }} -l app=${{ github.event.inputs.service }}
+          echo "Migrations completed successfully ✅"

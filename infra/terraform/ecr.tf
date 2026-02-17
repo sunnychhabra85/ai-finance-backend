@@ -1,4 +1,8 @@
-# ECR Repository for each service
+# ============================================
+# ECR Repositories for Services
+# ============================================
+# Cost: ~$1/month per repository for small usage
+
 resource "aws_ecr_repository" "services" {
   for_each = toset([
     "auth-service",
@@ -11,6 +15,7 @@ resource "aws_ecr_repository" "services" {
   name                 = "${var.project_name}/${each.value}"
   image_tag_mutability = "MUTABLE"
 
+  # Image scanning for vulnerabilities
   image_scanning_configuration {
     scan_on_push = true
   }
@@ -20,7 +25,10 @@ resource "aws_ecr_repository" "services" {
   }
 }
 
-# ECR Lifecycle Policy (keep only 10 latest images)
+# ============================================
+# ECR Lifecycle Policy (AUTO-DELETE OLD IMAGES)
+# ============================================
+# Keep only 10 latest images to save storage
 resource "aws_ecr_lifecycle_policy" "services" {
   for_each = aws_ecr_repository.services
 
@@ -32,9 +40,9 @@ resource "aws_ecr_lifecycle_policy" "services" {
         rulePriority = 1
         description  = "Keep last 10 images"
         selection = {
-          tagStatus     = "any"
-          countType     = "imageCountMoreThan"
-          countNumber   = 10
+          tagStatus   = "any"
+          countType   = "imageCountMoreThan"
+          countNumber = 10
         }
         action = {
           type = "expire"

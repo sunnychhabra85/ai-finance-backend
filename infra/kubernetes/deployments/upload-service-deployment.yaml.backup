@@ -7,7 +7,7 @@ metadata:
     app: upload-service
     version: v1
 spec:
-  replicas: 1
+  replicas: 3
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -44,30 +44,29 @@ spec:
         
         resources:
           requests:
-            memory: "128Mi"
-            cpu: "100m"
+            memory: "512Mi"
+            cpu: "250m"
           limits:
-            memory: "256Mi"
-            cpu: "200m"
+            memory: "1Gi"
+            cpu: "500m"
         
-        # Health checks - Commented out until /health endpoint is implemented
-        # livenessProbe:
-        #   httpGet:
-        #     path: /health
-        #     port: 3002
-        #   initialDelaySeconds: 30
-        #   periodSeconds: 10
-        #   timeoutSeconds: 3
-        #   failureThreshold: 3
-        # 
-        # readinessProbe:
-        #   httpGet:
-        #     path: /health
-        #     port: 3002
-        #   initialDelaySeconds: 10
-        #   periodSeconds: 5
-        #   timeoutSeconds: 3
-        #   failureThreshold: 3
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 3002
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 3
+          failureThreshold: 3
+        
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 3002
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 3
         
         securityContext:
           runAsNonRoot: true

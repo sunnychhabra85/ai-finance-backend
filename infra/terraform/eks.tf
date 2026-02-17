@@ -1,4 +1,6 @@
+# ============================================
 # EKS Cluster IAM Role
+# ============================================
 resource "aws_iam_role" "eks_cluster" {
   name_prefix = "${var.project_name}-eks-cluster-"
 
@@ -14,6 +16,10 @@ resource "aws_iam_role" "eks_cluster" {
       }
     ]
   })
+
+  tags = {
+    Name = "${var.project_name}-eks-cluster-role-${var.environment}"
+  }
 }
 
 resource "aws_iam_role_policy_attachment" "eks_cluster_policy" {
@@ -21,11 +27,15 @@ resource "aws_iam_role_policy_attachment" "eks_cluster_policy" {
   role       = aws_iam_role.eks_cluster.name
 }
 
+# ============================================
 # EKS Cluster
+# ============================================
 resource "aws_eks_cluster" "main" {
-  name            = "${var.project_name}-eks-${var.environment}"
-  role_arn        = aws_iam_role.eks_cluster.arn
-  version         = var.eks_cluster_version
+  name     = "${var.project_name}-eks-${var.environment}"
+  role_arn = aws_iam_role.eks_cluster.arn
+  version  = var.eks_cluster_version
+
+  # Enable cluster logging for troubleshooting
   enabled_cluster_log_types = ["api", "audit", "authenticator", "controllerManager", "scheduler"]
 
   vpc_config {
@@ -43,7 +53,9 @@ resource "aws_eks_cluster" "main" {
   depends_on = [aws_iam_role_policy_attachment.eks_cluster_policy]
 }
 
+# ============================================
 # EKS Node Group IAM Role
+# ============================================
 resource "aws_iam_role" "eks_nodes" {
   name_prefix = "${var.project_name}-eks-nodes-"
 
@@ -59,8 +71,13 @@ resource "aws_iam_role" "eks_nodes" {
       }
     ]
   })
+
+  tags = {
+    Name = "${var.project_name}-eks-nodes-role-${var.environment}"
+  }
 }
 
+# Required policies for EKS nodes
 resource "aws_iam_role_policy_attachment" "eks_worker_node_policy" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy"
   role       = aws_iam_role.eks_nodes.name
@@ -76,7 +93,7 @@ resource "aws_iam_role_policy_attachment" "eks_container_registry_policy" {
   role       = aws_iam_role.eks_nodes.name
 }
 
-# Allow nodes to pull from ECR
+# Allow nodes to pull from ECR (required for private ECR registries)
 resource "aws_iam_role_policy" "eks_ecr_policy" {
   name_prefix = "${var.project_name}-eks-ecr-"
   role        = aws_iam_role.eks_nodes.id
@@ -97,7 +114,9 @@ resource "aws_iam_role_policy" "eks_ecr_policy" {
   })
 }
 
+# ============================================
 # EKS Node Group
+# ============================================
 resource "aws_eks_node_group" "main" {
   cluster_name    = aws_eks_cluster.main.name
   node_group_name = "${var.project_name}-node-group-${var.environment}"
@@ -112,6 +131,15 @@ resource "aws_eks_node_group" "main" {
   }
 
   instance_types = var.eks_instance_types
+
+  # COST-OPTIMIZED: ON_DEMAND (reliable)
+  # For PRODUCTION on BUDGET: change to "SPOT" (saves 70% but less reliable)
+  capacity_type = var.eks_capacity_type
+
+  # Update strategy: replace old nodes gradually
+  update_config {
+    max_unavailable_percentage = 33
+  }
 
   tags = {
     Name = "${var.project_name}-node-group-${var.environment}"
@@ -128,7 +156,12 @@ resource "aws_eks_node_group" "main" {
   }
 }
 
-# OIDC Provider for IRSA (IAM Roles for Service Accounts)
+# ============================================
+# IRSA (IAM Roles for Service Accounts)
+# ============================================
+# This allows Kubernetes service accounts to assume IAM roles
+# Required for S3, CloudWatch, and other AWS service access
+
 data "tls_certificate" "eks" {
   url = aws_eks_cluster.main.identity[0].oidc[0].issuer
 }
@@ -137,4 +170,8 @@ resource "aws_iam_openid_connect_provider" "eks" {
   client_id_list  = ["sts.amazonaws.com"]
   thumbprint_list = [data.tls_certificate.eks.certificates[0].sha1_fingerprint]
   url             = aws_eks_cluster.main.identity[0].oidc[0].issuer
+
+  tags = {
+    Name = "${var.project_name}-eks-irsa-${var.environment}"
+  }
 }

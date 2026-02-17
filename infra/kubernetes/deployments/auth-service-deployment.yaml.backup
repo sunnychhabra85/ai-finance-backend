@@ -1,13 +1,13 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: upload-service
+  name: auth-service
   namespace: ai-finance
   labels:
-    app: upload-service
+    app: auth-service
     version: v1
 spec:
-  replicas: 1
+  replicas: 3
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -15,60 +15,69 @@ spec:
       maxUnavailable: 0
   selector:
     matchLabels:
-      app: upload-service
+      app: auth-service
   template:
     metadata:
       labels:
-        app: upload-service
+        app: auth-service
         version: v1
     spec:
       serviceAccountName: app-sa
       containers:
-      - name: upload-service
-        image: 014071048720.dkr.ecr.us-east-1.amazonaws.com/ai-finance/upload-service:latest
+      - name: auth-service
+        image: 014071048720.dkr.ecr.us-east-1.amazonaws.com/ai-finance/auth-service:latest
         imagePullPolicy: Always
         ports:
         - name: http
-          containerPort: 3002
+          containerPort: 3001
           protocol: TCP
         
+        # Environment Variables from ConfigMap and Secrets
         envFrom:
         - configMapRef:
-            name: app-config-dev
+            name: app-config-dev  # Change to env-staging or env-prod as needed
         - secretRef:
             name: app-secrets
         
+        # Additional environment variables
         env:
         - name: SERVICE_NAME
-          value: "upload-service"
+          value: "auth-service"
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: app-secrets
+              key: DATABASE_URL
         
+        # Resource limits
         resources:
           requests:
-            memory: "128Mi"
-            cpu: "100m"
-          limits:
             memory: "256Mi"
-            cpu: "200m"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
         
-        # Health checks - Commented out until /health endpoint is implemented
-        # livenessProbe:
-        #   httpGet:
-        #     path: /health
-        #     port: 3002
-        #   initialDelaySeconds: 30
-        #   periodSeconds: 10
-        #   timeoutSeconds: 3
-        #   failureThreshold: 3
-        # 
-        # readinessProbe:
-        #   httpGet:
-        #     path: /health
-        #     port: 3002
-        #   initialDelaySeconds: 10
-        #   periodSeconds: 5
-        #   timeoutSeconds: 3
-        #   failureThreshold: 3
+        # Health checks
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 3001
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 3
+          failureThreshold: 3
         
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 3001
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 3
+        
+        # Security context
         securityContext:
           runAsNonRoot: true
           runAsUser: 1001
@@ -78,6 +87,7 @@ spec:
             drop:
             - ALL
         
+        # Volume mounts
         volumeMounts:
         - name: tmp
           mountPath: /tmp
@@ -86,6 +96,7 @@ spec:
       - name: tmp
         emptyDir: {}
       
+      # Pod disruption budget for high availability
       affinity:
         podAntiAffinity:
           preferredDuringSchedulingIgnoredDuringExecution:
@@ -96,5 +107,5 @@ spec:
                 - key: app
                   operator: In
                   values:
-                  - upload-service
+                  - auth-service
               topologyKey: kubernetes.io/hostname

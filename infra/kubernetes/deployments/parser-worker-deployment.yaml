@@ -7,7 +7,7 @@ metadata:
     app: parser-worker
     version: v1
 spec:
-  replicas: 3
+  replicas: 1
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -25,7 +25,7 @@ spec:
       serviceAccountName: app-sa
       containers:
       - name: parser-worker
-        image: your-aws-account-id.dkr.ecr.us-east-1.amazonaws.com/ai-finance/parser-worker:latest
+        image: 014071048720.dkr.ecr.us-east-1.amazonaws.com/ai-finance/parser-worker:latest
         imagePullPolicy: Always
         ports:
         - name: http
@@ -44,29 +44,30 @@ spec:
         
         resources:
           requests:
-            memory: "1Gi"
-            cpu: "500m"
+            memory: "128Mi"
+            cpu: "100m"
           limits:
-            memory: "2Gi"
-            cpu: "1000m"
+            memory: "256Mi"
+            cpu: "200m"
         
-        livenessProbe:
-          httpGet:
-            path: /health
-            port: 3003
-          initialDelaySeconds: 30
-          periodSeconds: 10
-          timeoutSeconds: 3
-          failureThreshold: 3
-        
-        readinessProbe:
-          httpGet:
-            path: /health
-            port: 3003
-          initialDelaySeconds: 10
-          periodSeconds: 5
-          timeoutSeconds: 3
-          failureThreshold: 3
+        # Health checks - Commented out until /health endpoint is implemented
+        # livenessProbe:
+        #   httpGet:
+        #     path: /health
+        #     port: 3003
+        #   initialDelaySeconds: 30
+        #   periodSeconds: 10
+        #   timeoutSeconds: 3
+        #   failureThreshold: 3
+        # 
+        # readinessProbe:
+        #   httpGet:
+        #     path: /health
+        #     port: 3003
+        #   initialDelaySeconds: 10
+        #   periodSeconds: 5
+        #   timeoutSeconds: 3
+        #   failureThreshold: 3
         
         securityContext:
           runAsNonRoot: true

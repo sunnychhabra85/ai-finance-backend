@@ -1,13 +1,13 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: upload-service
+  name: parser-worker
   namespace: ai-finance
   labels:
-    app: upload-service
+    app: parser-worker
     version: v1
 spec:
-  replicas: 1
+  replicas: 3
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -15,21 +15,21 @@ spec:
       maxUnavailable: 0
   selector:
     matchLabels:
-      app: upload-service
+      app: parser-worker
   template:
     metadata:
       labels:
-        app: upload-service
+        app: parser-worker
         version: v1
     spec:
       serviceAccountName: app-sa
       containers:
-      - name: upload-service
-        image: 014071048720.dkr.ecr.us-east-1.amazonaws.com/ai-finance/upload-service:latest
+      - name: parser-worker
+        image: 014071048720.dkr.ecr.us-east-1.amazonaws.com/ai-finance/parser-worker:latest
         imagePullPolicy: Always
         ports:
         - name: http
-          containerPort: 3002
+          containerPort: 3003
           protocol: TCP
         
         envFrom:
@@ -40,34 +40,33 @@ spec:
         
         env:
         - name: SERVICE_NAME
-          value: "upload-service"
+          value: "parser-worker"
         
         resources:
           requests:
-            memory: "128Mi"
-            cpu: "100m"
+            memory: "1Gi"
+            cpu: "500m"
           limits:
-            memory: "256Mi"
-            cpu: "200m"
+            memory: "2Gi"
+            cpu: "1000m"
         
-        # Health checks - Commented out until /health endpoint is implemented
-        # livenessProbe:
-        #   httpGet:
-        #     path: /health
-        #     port: 3002
-        #   initialDelaySeconds: 30
-        #   periodSeconds: 10
-        #   timeoutSeconds: 3
-        #   failureThreshold: 3
-        # 
-        # readinessProbe:
-        #   httpGet:
-        #     path: /health
-        #     port: 3002
-        #   initialDelaySeconds: 10
-        #   periodSeconds: 5
-        #   timeoutSeconds: 3
-        #   failureThreshold: 3
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 3003
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 3
+          failureThreshold: 3
+        
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 3003
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 3
         
         securityContext:
           runAsNonRoot: true
@@ -96,5 +95,5 @@ spec:
                 - key: app
                   operator: In
                   values:
-                  - upload-service
+                  - parser-worker
               topologyKey: kubernetes.io/hostname

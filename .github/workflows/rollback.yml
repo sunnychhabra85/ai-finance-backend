@@ -1,0 +1,125 @@
+name: Rollback Deployment
+
+on:
+  workflow_dispatch:
+    inputs:
+      service:
+        description: 'Service to rollback'
+        required: true
+        type: choice
+        options:
+          - auth-service
+          - upload-service
+          - analytics-service
+          - ai-service
+          - parser-worker
+          - all
+      image_tag:
+        description: 'Image tag to rollback to (e.g., abc1234, or leave empty for previous)'
+        required: false
+        type: string
+
+env:
+  AWS_REGION: us-east-1
+  EKS_CLUSTER_NAME: ai-finance-eks-dev
+  ECR_REGISTRY: 014071048720.dkr.ecr.us-east-1.amazonaws.com
+  K8S_NAMESPACE: ai-finance
+
+jobs:
+  rollback:
+    name: Rollback ${{ github.event.inputs.service }}
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Update kubeconfig
+        run: |
+          aws eks update-kubeconfig --name ${{ env.EKS_CLUSTER_NAME }} --region ${{ env.AWS_REGION }}
+
+      - name: Get current deployment status
+        run: |
+          echo "=== Current Deployment Status ==="
+          kubectl get deployments -n ${{ env.K8S_NAMESPACE }}
+          echo ""
+          echo "=== Rollout History ==="
+          if [ "${{ github.event.inputs.service }}" == "all" ]; then
+            for service in auth-service upload-service analytics-service ai-service parser-worker; do
+              echo "--- $service ---"
+              kubectl rollout history deployment/$service -n ${{ env.K8S_NAMESPACE }} || true
+            done
+          else
+            kubectl rollout history deployment/${{ github.event.inputs.service }} -n ${{ env.K8S_NAMESPACE }}
+          fi
+
+      - name: Rollback with specific tag
+        if: github.event.inputs.image_tag != ''
+        run: |
+          services="${{ github.event.inputs.service }}"
+          if [ "$services" == "all" ]; then
+            services="auth-service upload-service analytics-service ai-service parser-worker"
+          fi
+          
+          for service in $services; do
+            echo "Rolling back $service to tag: ${{ github.event.inputs.image_tag }}"
+            kubectl set image deployment/$service \
+              $service=${{ env.ECR_REGISTRY }}/$service:${{ github.event.inputs.image_tag }} \
+              -n ${{ env.K8S_NAMESPACE }}
+            kubectl rollout status deployment/$service -n ${{ env.K8S_NAMESPACE }} --timeout=5m
+          done
+
+      - name: Rollback to previous version
+        if: github.event.inputs.image_tag == ''
+        run: |
+          services="${{ github.event.inputs.service }}"
+          if [ "$services" == "all" ]; then
+            services="auth-service upload-service analytics-service ai-service parser-worker"
+          fi
+          
+          for service in $services; do
+            echo "Rolling back $service to previous version"
+            kubectl rollout undo deployment/$service -n ${{ env.K8S_NAMESPACE }}
+            kubectl rollout status deployment/$service -n ${{ env.K8S_NAMESPACE }} --timeout=5m
+          done
+
+      - name: Verify rollback
+        run: |
+          echo "=== Post-Rollback Status ==="
+          kubectl get deployments -n ${{ env.K8S_NAMESPACE }}
+          echo ""
+          kubectl get pods -n ${{ env.K8S_NAMESPACE }}
+
+      - name: Check pod health
+        run: |
+          services="${{ github.event.inputs.service }}"
+          if [ "$services" == "all" ]; then
+            services="auth-service upload-service analytics-service ai-service parser-worker"
+          fi
+          
+          for service in $services; do
+            echo "Waiting for $service pods to be ready..."
+            kubectl wait --for=condition=ready pod -l app=$service -n ${{ env.K8S_NAMESPACE }} --timeout=300s || true
+          done
+          
+          echo ""
+          echo "=== Final Pod Status ==="
+          kubectl get pods -n ${{ env.K8S_NAMESPACE }}
+
+      - name: Get logs if failed
+        if: failure()
+        run: |
+          services="${{ github.event.inputs.service }}"
+          if [ "$services" == "all" ]; then
+            services="auth-service upload-service analytics-service ai-service parser-worker"
+          fi
+          
+          for service in $services; do
+            echo "=== Logs for $service ==="
+            kubectl logs -l app=$service -n ${{ env.K8S_NAMESPACE }} --tail=100 || true
+            echo ""
+          done

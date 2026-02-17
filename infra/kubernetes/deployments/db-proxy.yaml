@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: db-proxy
+  namespace: ai-finance
+  labels:
+    app: db-proxy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: db-proxy
+  template:
+    metadata:
+      labels:
+        app: db-proxy
+    spec:
+      containers:
+      - name: socat
+        image: alpine/socat:latest
+        command:
+          - socat
+          - TCP-LISTEN:5432,fork,reuseaddr
+          - TCP:ai-finance-postgres-dev.csho2mgkegta.us-east-1.rds.amazonaws.com:5432
+        ports:
+        - containerPort: 5432
+          name: postgres
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "50m"
+          limits:
+            memory: "128Mi"
+            cpu: "100m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: db-proxy
+  namespace: ai-finance
+spec:
+  selector:
+    app: db-proxy
+  ports:
+  - port: 5432
+    targetPort: 5432
+    protocol: TCP

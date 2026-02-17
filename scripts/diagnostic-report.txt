@@ -1,0 +1,300 @@
+🔍 Diagnosing Pod Issues...
+==============================================
+
+1️⃣  POD STATUS:
+────────────────────────────────────────────
+NAME                                READY   STATUS                       RESTARTS   AGE   IP           NODE                         NOMINATED NODE   READINESS GATES
+ai-service-74f6d65696-d5s4d         0/1     CreateContainerConfigError   0          12m   10.0.2.93    ip-10-0-2-111.ec2.internal   <none>           <none>
+ai-service-74f6d65696-g58z8         0/1     CreateContainerConfigError   0          12m   10.0.2.136   ip-10-0-2-111.ec2.internal   <none>           <none>
+analytics-service-6d5f74f89-hp49w   0/1     Pending                      0          12m   <none>       <none>                       <none>           <none>
+analytics-service-6d5f74f89-x95zk   0/1     Pending                      0          12m   <none>       <none>                       <none>           <none>
+auth-service-9649d848b-8x2hx        0/1     Pending                      0          12m   <none>       <none>                       <none>           <none>
+auth-service-9649d848b-mcxkb        0/1     Pending                      0          12m   <none>       <none>                       <none>           <none>
+auth-service-9649d848b-pjxk9        0/1     CreateContainerConfigError   0          12m   10.0.2.41    ip-10-0-2-111.ec2.internal   <none>           <none>
+parser-worker-8664b69d97-9tcs5      0/1     Pending                      0          12m   <none>       <none>                       <none>           <none>
+parser-worker-8664b69d97-cfmkl      0/1     Pending                      0          12m   <none>       <none>                       <none>           <none>
+parser-worker-8664b69d97-j6kzf      0/1     Pending                      0          12m   <none>       <none>                       <none>           <none>
+upload-service-7b688c7c8d-5twwd     0/1     Pending                      0          12m   <none>       <none>                       <none>           <none>
+upload-service-7b688c7c8d-gxrq4     0/1     Pending                      0          12m   <none>       <none>                       <none>           <none>
+upload-service-7b688c7c8d-zx59r     0/1     Pending                      0          12m   <none>       <none>                       <none>           <none>
+
+2️⃣  POD DETAILED INFORMATION:
+────────────────────────────────────────────
+Describing pod: ai-service-74f6d65696-d5s4d
+Name:             ai-service-74f6d65696-d5s4d
+Namespace:        ai-finance
+Priority:         0
+Service Account:  app-sa
+Node:             ip-10-0-2-111.ec2.internal/10.0.2.111
+Start Time:       Sun, 15 Feb 2026 19:10:50 +0530
+Labels:           app=ai-service
+                  pod-template-hash=74f6d65696
+                  version=v1
+Annotations:      <none>
+Status:           Pending
+IP:               10.0.2.93
+IPs:
+  IP:           10.0.2.93
+Controlled By:  ReplicaSet/ai-service-74f6d65696
+Containers:
+  ai-service:
+    Container ID:   
+    Image:          014071048720.dkr.ecr.us-east-1.amazonaws.com/ai-finance/ai-service:latest
+    Image ID:       
+    Port:           3005/TCP (http)
+    Host Port:      0/TCP (http)
+    State:          Waiting
+      Reason:       CreateContainerConfigError
+    Ready:          False
+    Restart Count:  0
+    Limits:
+      cpu:     500m
+      memory:  1Gi
+    Requests:
+      cpu:      250m
+      memory:   512Mi
+    Liveness:   http-get http://:3005/health delay=30s timeout=3s period=10s #success=1 #failure=3
+    Readiness:  http-get http://:3005/health delay=10s timeout=3s period=5s #success=1 #failure=3
+    Environment Variables from:
+      app-config-dev  ConfigMap  Optional: false
+      app-secrets     Secret     Optional: false
+    Environment:
+      SERVICE_NAME:                 ai-service
+      AWS_STS_REGIONAL_ENDPOINTS:   regional
+      AWS_DEFAULT_REGION:           us-east-1
+      AWS_REGION:                   us-east-1
+      AWS_ROLE_ARN:                 arn:aws:iam::014071048720:role/ai-finance-app-20260215110721215800000003
+      AWS_WEB_IDENTITY_TOKEN_FILE:  /var/run/secrets/eks.amazonaws.com/serviceaccount/token
+    Mounts:
+      /tmp from tmp (rw)
+      /var/run/secrets/eks.amazonaws.com/serviceaccount from aws-iam-token (ro)
+      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-htpv9 (ro)
+Conditions:
+  Type                        Status
+  PodReadyToStartContainers   True 
+  Initialized                 True 
+  Ready                       False 
+  ContainersReady             False 
+  PodScheduled                True 
+Volumes:
+  aws-iam-token:
+    Type:                    Projected (a volume that contains injected data from multiple sources)
+    TokenExpirationSeconds:  86400
+  tmp:
+    Type:       EmptyDir (a temporary directory that shares a pod's lifetime)
+    Medium:     
+    SizeLimit:  <unset>
+  kube-api-access-htpv9:
+    Type:                    Projected (a volume that contains injected data from multiple sources)
+    TokenExpirationSeconds:  3607
+    ConfigMapName:           kube-root-ca.crt
+    Optional:                false
+    DownwardAPI:             true
+QoS Class:                   Burstable
+Node-Selectors:              <none>
+Tolerations:                 node.kubernetes.io/not-ready:NoExecute op=Exists for 300s
+                             node.kubernetes.io/unreachable:NoExecute op=Exists for 300s
+Events:
+  Type     Reason     Age                   From               Message
+  ----     ------     ----                  ----               -------
+  Normal   Scheduled  12m                   default-scheduler  Successfully assigned ai-finance/ai-service-74f6d65696-d5s4d to ip-10-0-2-111.ec2.internal
+  Normal   Pulled     12m                   kubelet            Successfully pulled image "014071048720.dkr.ecr.us-east-1.amazonaws.com/ai-finance/ai-service:latest" in 15.585s (15.585s including waiting)
+  Normal   Pulled     12m                   kubelet            Successfully pulled image "014071048720.dkr.ecr.us-east-1.amazonaws.com/ai-finance/ai-service:latest" in 156ms (156ms including waiting)
+  Normal   Pulled     12m                   kubelet            Successfully pulled image "014071048720.dkr.ecr.us-east-1.amazonaws.com/ai-finance/ai-service:latest" in 135ms (135ms including waiting)
+  Normal   Pulled     11m                   kubelet            Successfully pulled image "014071048720.dkr.ecr.us-east-1.amazonaws.com/ai-finance/ai-service:latest" in 141ms (141ms including waiting)
+  Normal   Pulled     11m                   kubelet            Successfully pulled image "014071048720.dkr.ecr.us-east-1.amazonaws.com/ai-finance/ai-service:latest" in 121ms (121ms including waiting)
+  Normal   Pulled     11m (x2 over 11m)     kubelet            Successfully pulled image "014071048720.dkr.ecr.us-east-1.amazonaws.com/ai-finance/ai-service:latest" in 123ms (123ms including waiting)
+  Warning  Failed     11m (x8 over 12m)     kubelet            Error: secret "app-secrets" not found
+  Normal   Pulled     11m                   kubelet            Successfully pulled image "014071048720.dkr.ecr.us-east-1.amazonaws.com/ai-finance/ai-service:latest" in 119ms (119ms including waiting)
+  Normal   Pulling    2m30s (x47 over 12m)  kubelet            Pulling image "014071048720.dkr.ecr.us-east-1.amazonaws.com/ai-finance/ai-service:latest"
+
+3️⃣  POD EVENTS (Last 20):
+────────────────────────────────────────────
+11m         Warning   Failed                         pod/ai-service-74f6d65696-g58z8                 Error: secret "app-secrets" not found
+11m         Normal    Pulled                         pod/ai-service-74f6d65696-g58z8                 Successfully pulled image "014071048720.dkr.ecr.us-east-1.amazonaws.com/ai-finance/ai-service:latest" in 127ms (127ms including waiting)
+10m         Warning   FailedComputeMetricsReplicas   horizontalpodautoscaler/ai-service-hpa          invalid metrics (2 invalid out of 2), first error is: failed to get cpu resource metric value: failed to get cpu utilization: unable to get metrics for resource cpu: unable to fetch metrics from resource metrics API: the server could not find the requested resource (get pods.metrics.k8s.io)
+10m         Warning   FailedGetResourceMetric        horizontalpodautoscaler/ai-service-hpa          failed to get memory utilization: unable to get metrics for resource memory: unable to fetch metrics from resource metrics API: the server could not find the requested resource (get pods.metrics.k8s.io)
+10m         Warning   FailedGetResourceMetric        horizontalpodautoscaler/analytics-service-hpa   failed to get memory utilization: unable to get metrics for resource memory: unable to fetch metrics from resource metrics API: the server could not find the requested resource (get pods.metrics.k8s.io)
+10m         Warning   FailedComputeMetricsReplicas   horizontalpodautoscaler/analytics-service-hpa   invalid metrics (2 invalid out of 2), first error is: failed to get cpu resource metric value: failed to get cpu utilization: unable to get metrics for resource cpu: unable to fetch metrics from resource metrics API: the server could not find the requested resource (get pods.metrics.k8s.io)
+10m         Warning   FailedGetResourceMetric        horizontalpodautoscaler/auth-service-hpa        failed to get memory utilization: unable to get metrics for resource memory: unable to fetch metrics from resource metrics API: the server could not find the requested resource (get pods.metrics.k8s.io)
+10m         Warning   FailedComputeMetricsReplicas   horizontalpodautoscaler/auth-service-hpa        invalid metrics (2 invalid out of 2), first error is: failed to get cpu resource metric value: failed to get cpu utilization: unable to get metrics for resource cpu: unable to fetch metrics from resource metrics API: the server could not find the requested resource (get pods.metrics.k8s.io)
+10m         Warning   FailedGetResourceMetric        horizontalpodautoscaler/parser-worker-hpa       failed to get memory utilization: unable to get metrics for resource memory: unable to fetch metrics from resource metrics API: the server could not find the requested resource (get pods.metrics.k8s.io)
+10m         Warning   FailedComputeMetricsReplicas   horizontalpodautoscaler/parser-worker-hpa       invalid metrics (2 invalid out of 2), first error is: failed to get cpu resource metric value: failed to get cpu utilization: unable to get metrics for resource cpu: unable to fetch metrics from resource metrics API: the server could not find the requested resource (get pods.metrics.k8s.io)
+10m         Warning   FailedGetResourceMetric        horizontalpodautoscaler/upload-service-hpa      failed to get memory utilization: unable to get metrics for resource memory: unable to fetch metrics from resource metrics API: the server could not find the requested resource (get pods.metrics.k8s.io)
+10m         Warning   FailedComputeMetricsReplicas   horizontalpodautoscaler/upload-service-hpa      invalid metrics (2 invalid out of 2), first error is: failed to get cpu resource metric value: failed to get cpu utilization: unable to get metrics for resource cpu: unable to fetch metrics from resource metrics API: the server could not find the requested resource (get pods.metrics.k8s.io)
+2m36s       Normal    Pulling                        pod/ai-service-74f6d65696-g58z8                 Pulling image "014071048720.dkr.ecr.us-east-1.amazonaws.com/ai-finance/ai-service:latest"
+2m31s       Normal    Pulling                        pod/ai-service-74f6d65696-d5s4d                 Pulling image "014071048720.dkr.ecr.us-east-1.amazonaws.com/ai-finance/ai-service:latest"
+2m28s       Normal    Pulling                        pod/auth-service-9649d848b-pjxk9                Pulling image "014071048720.dkr.ecr.us-east-1.amazonaws.com/ai-finance/auth-service:latest"
+2m10s       Warning   FailedGetResourceMetric        horizontalpodautoscaler/ai-service-hpa          failed to get cpu utilization: unable to get metrics for resource cpu: unable to fetch metrics from resource metrics API: the server could not find the requested resource (get pods.metrics.k8s.io)
+2m9s        Warning   FailedGetResourceMetric        horizontalpodautoscaler/analytics-service-hpa   failed to get cpu utilization: unable to get metrics for resource cpu: unable to fetch metrics from resource metrics API: the server could not find the requested resource (get pods.metrics.k8s.io)
+2m8s        Warning   FailedGetResourceMetric        horizontalpodautoscaler/parser-worker-hpa       failed to get cpu utilization: unable to get metrics for resource cpu: unable to fetch metrics from resource metrics API: the server could not find the requested resource (get pods.metrics.k8s.io)
+2m8s        Warning   FailedGetResourceMetric        horizontalpodautoscaler/auth-service-hpa        failed to get cpu utilization: unable to get metrics for resource cpu: unable to fetch metrics from resource metrics API: the server could not find the requested resource (get pods.metrics.k8s.io)
+2m5s        Warning   FailedGetResourceMetric        horizontalpodautoscaler/upload-service-hpa      failed to get cpu utilization: unable to get metrics for resource cpu: unable to fetch metrics from resource metrics API: the server could not find the requested resource (get pods.metrics.k8s.io)
+
+4️⃣  NODE STATUS:
+────────────────────────────────────────────
+NAME                         STATUS   ROLES    AGE   VERSION                INTERNAL-IP   EXTERNAL-IP   OS-IMAGE         KERNEL-VERSION                  CONTAINER-RUNTIME
+ip-10-0-2-111.ec2.internal   Ready    <none>   31m   v1.29.15-eks-ecaa3a6   10.0.2.111    <none>        Amazon Linux 2   5.10.245-245.983.amzn2.x86_64   containerd://1.7.29
+Name:               ip-10-0-2-111.ec2.internal
+Roles:              <none>
+Labels:             beta.kubernetes.io/arch=amd64
+                    beta.kubernetes.io/instance-type=t3.small
+                    beta.kubernetes.io/os=linux
+                    eks.amazonaws.com/capacityType=ON_DEMAND
+                    eks.amazonaws.com/nodegroup=ai-finance-node-group-dev
+                    eks.amazonaws.com/nodegroup-image=ami-0a23644f1ead7eb05
+                    failure-domain.beta.kubernetes.io/region=us-east-1
+                    failure-domain.beta.kubernetes.io/zone=us-east-1b
+                    k8s.io/cloud-provider-aws=20d83db54e8e3865a78e30a398b3966b
+                    kubernetes.io/arch=amd64
+                    kubernetes.io/hostname=ip-10-0-2-111.ec2.internal
+                    kubernetes.io/os=linux
+                    node.kubernetes.io/instance-type=t3.small
+                    topology.kubernetes.io/region=us-east-1
+                    topology.kubernetes.io/zone=us-east-1b
+Annotations:        alpha.kubernetes.io/provided-node-ip: 10.0.2.111
+                    node.alpha.kubernetes.io/ttl: 0
+                    volumes.kubernetes.io/controller-managed-attach-detach: true
+CreationTimestamp:  Sun, 15 Feb 2026 18:52:32 +0530
+Taints:             <none>
+Unschedulable:      false
+Lease:
+  HolderIdentity:  ip-10-0-2-111.ec2.internal
+  AcquireTime:     <unset>
+  RenewTime:       Sun, 15 Feb 2026 19:23:33 +0530
+Conditions:
+  Type             Status  LastHeartbeatTime                 LastTransitionTime                Reason                       Message
+  ----             ------  -----------------                 ------------------                ------                       -------
+  MemoryPressure   False   Sun, 15 Feb 2026 19:21:48 +0530   Sun, 15 Feb 2026 18:52:31 +0530   KubeletHasSufficientMemory   kubelet has sufficient memory available
+  DiskPressure     False   Sun, 15 Feb 2026 19:21:48 +0530   Sun, 15 Feb 2026 18:52:31 +0530   KubeletHasNoDiskPressure     kubelet has no disk pressure
+  PIDPressure      False   Sun, 15 Feb 2026 19:21:48 +0530   Sun, 15 Feb 2026 18:52:31 +0530   KubeletHasSufficientPID      kubelet has sufficient PID available
+  Ready            True    Sun, 15 Feb 2026 19:21:48 +0530   Sun, 15 Feb 2026 18:52:44 +0530   KubeletReady                 kubelet is posting ready status
+Addresses:
+  InternalIP:   10.0.2.111
+  InternalDNS:  ip-10-0-2-111.ec2.internal
+  Hostname:     ip-10-0-2-111.ec2.internal
+Capacity:
+  cpu:                2
+  ephemeral-storage:  20959212Ki
+  hugepages-1Gi:      0
+  hugepages-2Mi:      0
+  memory:             1982732Ki
+  pods:               11
+Allocatable:
+  cpu:                1930m
+  ephemeral-storage:  18242267924
+  hugepages-1Gi:      0
+  hugepages-2Mi:      0
+  memory:             1495308Ki
+  pods:               11
+System Info:
+  Machine ID:                 ec293d5a33ce610c1e7f78d958e28ac5
+  System UUID:                ec293d5a-33ce-610c-1e7f-78d958e28ac5
+  Boot ID:                    00b1904f-2ed2-4948-a95d-019c7f13e897
+  Kernel Version:             5.10.245-245.983.amzn2.x86_64
+  OS Image:                   Amazon Linux 2
+  Operating System:           linux
+  Architecture:               amd64
+  Container Runtime Version:  containerd://1.7.29
+  Kubelet Version:            v1.29.15-eks-ecaa3a6
+  Kube-Proxy Version:         v1.29.15-eks-ecaa3a6
+ProviderID:                   aws:///us-east-1b/i-018a4c4146726598e
+Non-terminated Pods:          (7 in total)
+  Namespace                   Name                            CPU Requests  CPU Limits  Memory Requests  Memory Limits  Age
+  ---------                   ----                            ------------  ----------  ---------------  -------------  ---
+  ai-finance                  ai-service-74f6d65696-d5s4d     250m (12%)    500m (25%)  512Mi (35%)      1Gi (70%)      12m
+  ai-finance                  ai-service-74f6d65696-g58z8     250m (12%)    500m (25%)  512Mi (35%)      1Gi (70%)      12m
+  ai-finance                  auth-service-9649d848b-pjxk9    250m (12%)    500m (25%)  256Mi (17%)      512Mi (35%)    12m
+  kube-system                 aws-node-52l6d                  50m (2%)      0 (0%)      0 (0%)           0 (0%)         31m
+  kube-system                 coredns-86969bccb4-2pdl2        100m (5%)     0 (0%)      70Mi (4%)        170Mi (11%)    168m
+  kube-system                 coredns-86969bccb4-wctvk        100m (5%)     0 (0%)      70Mi (4%)        170Mi (11%)    168m
+  kube-system                 kube-proxy-96hq6                100m (5%)     0 (0%)      0 (0%)           0 (0%)         31m
+Allocated resources:
+  (Total limits may be over 100 percent, i.e., overcommitted.)
+  Resource           Requests      Limits
+  --------           --------      ------
+  cpu                1100m (56%)   1500m (77%)
+  memory             1420Mi (97%)  2900Mi (198%)
+  ephemeral-storage  0 (0%)        0 (0%)
+  hugepages-1Gi      0 (0%)        0 (0%)
+  hugepages-2Mi      0 (0%)        0 (0%)
+Events:
+  Type     Reason                   Age                From                   Message
+  ----     ------                   ----               ----                   -------
+  Normal   Starting                 30m                kube-proxy             
+  Normal   Starting                 31m                kubelet                Starting kubelet.
+  Warning  InvalidDiskCapacity      31m                kubelet                invalid capacity 0 on image filesystem
+  Normal   NodeHasSufficientMemory  31m (x2 over 31m)  kubelet                Node ip-10-0-2-111.ec2.internal status is now: NodeHasSufficientMemory
+  Normal   NodeHasNoDiskPressure    31m (x2 over 31m)  kubelet                Node ip-10-0-2-111.ec2.internal status is now: NodeHasNoDiskPressure
+  Normal   NodeHasSufficientPID     31m (x2 over 31m)  kubelet                Node ip-10-0-2-111.ec2.internal status is now: NodeHasSufficientPID
+  Normal   NodeAllocatableEnforced  31m                kubelet                Updated Node Allocatable limit across pods
+  Normal   Synced                   31m                cloud-node-controller  Node synced successfully
+  Normal   RegisteredNode           31m                node-controller        Node ip-10-0-2-111.ec2.internal event: Registered Node ip-10-0-2-111.ec2.internal in Controller
+  Normal   NodeReady                30m                kubelet                Node ip-10-0-2-111.ec2.internal status is now: NodeReady
+
+5️⃣  EKS CLUSTER STATUS:
+────────────────────────────────────────────
+"ACTIVE"
+
+6️⃣  RESOURCE USAGE:
+────────────────────────────────────────────
+Node resources:
+Metrics not available yet
+
+Pod resource requests:
+./diagnose-pods.sh: line 56: jq: command not found
+error: write /dev/stdout: The pipe is being closed.
+
+7️⃣  IMAGE PULL STATUS:
+────────────────────────────────────────────
+./diagnose-pods.sh: line 62: jq: command not found
+error: write /dev/stdout: The pipe is being closed.
+
+8️⃣  SERVICE ACCOUNT:
+────────────────────────────────────────────
+NAME      SECRETS   AGE
+app-sa    0         23m
+default   0         23m
+NAME             TYPE     DATA   AGE
+db-credentials   Opaque   5      23m
+
+9️⃣  ECR IMAGES AVAILABILITY:
+────────────────────────────────────────────
+[
+    "latest"
+]
+
+🔟 POD LOGS (Last 50 lines):
+────────────────────────────────────────────
+Pod: ai-service-74f6d65696-d5s4d
+Error from server (BadRequest): container "ai-service" in pod "ai-service-74f6d65696-d5s4d" is waiting to start: CreateContainerConfigError
+No logs available
+---
+Pod: ai-service-74f6d65696-g58z8
+Error from server (BadRequest): container "ai-service" in pod "ai-service-74f6d65696-g58z8" is waiting to start: CreateContainerConfigError
+No logs available
+---
+Pod: analytics-service-6d5f74f89-hp49w
+---
+Pod: analytics-service-6d5f74f89-x95zk
+---
+Pod: auth-service-9649d848b-8x2hx
+---
+Pod: auth-service-9649d848b-mcxkb
+---
+Pod: auth-service-9649d848b-pjxk9
+Error from server (BadRequest): container "auth-service" in pod "auth-service-9649d848b-pjxk9" is waiting to start: CreateContainerConfigError
+No logs available
+---
+Pod: parser-worker-8664b69d97-9tcs5
+---
+Pod: parser-worker-8664b69d97-cfmkl
+---
+Pod: parser-worker-8664b69d97-j6kzf
+---
+Pod: upload-service-7b688c7c8d-5twwd
+---
+Pod: upload-service-7b688c7c8d-gxrq4
+---
+Pod: upload-service-7b688c7c8d-zx59r
+---

@@ -1,0 +1,187 @@
+================================================================================
+AI Finance AWS Deployment Summary
+Generated: Sun, Feb 15, 2026  7:27:36 PM
+================================================================================
+
+INFRASTRUCTURE DETAILS:
+─────────────────────────────────────────────────────────────────────────────
+
+AWS Account ID:          014071048720
+AWS Region:              us-east-1
+Environment:             dev
+
+EKS CLUSTER:
+  Name:                  ai-finance-eks-dev
+  Endpoint:              https://FFD8CF1CD0C6575C56F2EBD66311DB51.gr7.us-east-1.eks.amazonaws.com
+  Status:                ACTIVE
+  Nodes:                 1
+
+RDS DATABASE:
+  Host:                  ai-finance-postgres-dev.csho2mgkegta.us-east-1.rds.amazonaws.com
+  Port:                  5432
+  Database:              aifinancedb
+  Engine:                PostgreSQL 16.1
+  Instance Type:         db.t3.micro
+  Status:                available
+
+S3 STORAGE:
+  Bucket Name:           ai-finance-uploads-dev-014071048720
+  Status:                accessible
+
+APPLICATION LOAD BALANCER:
+  DNS Name:              ai-finance-alb-dev-1237623524.us-east-1.elb.amazonaws.com
+  URL:                   http://ai-finance-alb-dev-1237623524.us-east-1.elb.amazonaws.com
+  Status:                active
+
+ECR CONTAINER REGISTRY:
+  Registry URL:          014071048720.dkr.ecr.us-east-1.amazonaws.com
+  Images Available:      5
+
+DEPLOYED SERVICES:
+  - auth-service (port 3001)
+  - upload-service (port 3002)
+  - parser-worker (port 3003)
+  - analytics-service (port 3004)
+  - ai-service (port 3005)
+
+================================================================================
+ACCESS INFORMATION:
+─────────────────────────────────────────────────────────────────────────────
+
+Application URL:         http://ai-finance-alb-dev-1237623524.us-east-1.elb.amazonaws.com
+
+API Endpoints:
+  Auth Service:          http://ai-finance-alb-dev-1237623524.us-east-1.elb.amazonaws.com/api/auth
+  Upload Service:        http://ai-finance-alb-dev-1237623524.us-east-1.elb.amazonaws.com/api/upload
+  Parser Worker:         http://ai-finance-alb-dev-1237623524.us-east-1.elb.amazonaws.com/api/parse
+  Analytics Service:     http://ai-finance-alb-dev-1237623524.us-east-1.elb.amazonaws.com/api/analytics
+  AI Service:            http://ai-finance-alb-dev-1237623524.us-east-1.elb.amazonaws.com/api/ai
+
+Kubernetes Namespace:    ai-finance
+
+================================================================================
+USEFUL KUBECTL COMMANDS:
+─────────────────────────────────────────────────────────────────────────────
+
+View Pods:
+  kubectl get pods -n ai-finance
+
+View Services:
+  kubectl get svc -n ai-finance
+
+View Deployments:
+  kubectl get deployments -n ai-finance
+
+View Logs:
+  kubectl logs -f deployment/auth-service -n ai-finance
+
+Port Forward (Local Testing):
+  kubectl port-forward svc/auth-service 3001:3001 -n ai-finance
+
+Scale Service:
+  kubectl scale deployment auth-service --replicas=3 -n ai-finance
+
+Monitor Resources:
+  kubectl top pods -n ai-finance
+  kubectl top nodes
+
+Describe Pod:
+  kubectl describe pod <pod-name> -n ai-finance
+
+Get Pod Details:
+  kubectl get pods -n ai-finance -o wide
+
+================================================================================
+AWS CLI COMMANDS:
+─────────────────────────────────────────────────────────────────────────────
+
+View EKS Cluster:
+  aws eks describe-cluster --name ai-finance-eks-dev --region us-east-1
+
+View RDS Database:
+  aws rds describe-db-instances --db-instance-identifier ai-finance-postgres-dev --region us-east-1
+
+View S3 Bucket:
+  aws s3 ls s3://ai-finance-uploads-dev-014071048720
+
+View ALB:
+  aws elbv2 describe-load-balancers --region us-east-1
+
+View ECR Images:
+  aws ecr list-images --repository-name ai-finance/auth-service --region us-east-1
+
+================================================================================
+ESTIMATED MONTHLY COSTS:
+─────────────────────────────────────────────────────────────────────────────
+
+EKS Cluster Fee:         $73.00
+EC2 (1x t3.small):       $18.00
+RDS (db.t3.micro):       FREE (12 months)
+NAT Gateways:            $0.00 (using VPC Endpoints)
+VPC Endpoints (3x):      $21.60
+Application Load Balancer: $22.32
+CloudWatch Monitoring:   $2.00
+S3 Storage:              $2.00
+ECR Storage:             $1.00
+Other/Data Transfer:     $5.00
+─────────────────────────────────────────────────────────────────────────────
+TOTAL MONTHLY:           $144.92
+
+ANNUAL TOTAL:            $1,739.04
+(Note: RDS free tier expires after 12 months)
+
+================================================================================
+IMPORTANT NOTES:
+─────────────────────────────────────────────────────────────────────────────
+
+1. SECURITY:
+   - Database password is stored in Kubernetes secrets
+   - Private RDS instance - not publicly accessible
+   - S3 bucket restricted to EKS nodes only
+   - IRSA configured for pod-to-AWS service access
+
+2. DATA:
+   - Terraform state file contains sensitive data - keep it safe
+   - Database backups: 1 day retention (configured for demo)
+   - S3 files auto-deleted after 90 days
+
+3. SCALING:
+   - EKS auto-scaling: 1-3 nodes (adjust in terraform.tfvars)
+   - Pod auto-scaling: Enabled (HPA configured)
+   - Increase desired_size in terraform.tfvars to add nodes
+
+4. MONITORING:
+   - CloudWatch logs available in AWS Console
+   - kubectl logs for pod logs
+   - kubectl top for resource usage
+
+5. CLEANUP:
+   - To destroy all resources: cd infra/terraform && terraform destroy
+   - WARNING: This will delete databases and data
+
+================================================================================
+NEXT STEPS:
+─────────────────────────────────────────────────────────────────────────────
+
+1. Test the API:
+   curl http://ai-finance-alb-dev-1237623524.us-east-1.elb.amazonaws.com/api/auth/health
+
+2. View logs:
+   kubectl logs -f deployment/auth-service -n ai-finance
+
+3. Port forward for local testing:
+   kubectl port-forward svc/auth-service 3001:3001 -n ai-finance
+
+4. Scale services if needed:
+   kubectl scale deployment auth-service --replicas=3 -n ai-finance
+
+5. Monitor resources:
+   kubectl top pods -n ai-finance
+
+6. Update domain in Route53 (if using custom domain)
+
+7. Enable HTTPS in ALB (if needed)
+
+================================================================================
+Deployment completed successfully!
+All services are running and accessible.

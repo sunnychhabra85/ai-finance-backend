@@ -1,4 +1,7 @@
-# IAM Role for application to access AWS services
+# ============================================
+# IAM Role for Applications (IRSA)
+# ============================================
+# Allows Kubernetes pods to access AWS services
 resource "aws_iam_role" "app_role" {
   name_prefix = "${var.project_name}-app-"
 
@@ -19,9 +22,15 @@ resource "aws_iam_role" "app_role" {
       }
     ]
   })
+
+  tags = {
+    Name = "${var.project_name}-app-role-${var.environment}"
+  }
 }
 
-# IAM Policy for S3 access
+# ============================================
+# S3 Access Policy
+# ============================================
 resource "aws_iam_role_policy" "app_s3_policy" {
   name_prefix = "${var.project_name}-app-s3-"
   role        = aws_iam_role.app_role.id
@@ -46,7 +55,9 @@ resource "aws_iam_role_policy" "app_s3_policy" {
   })
 }
 
-# IAM Policy for ECR access
+# ============================================
+# ECR Access Policy
+# ============================================
 resource "aws_iam_role_policy" "app_ecr_policy" {
   name_prefix = "${var.project_name}-app-ecr-"
   role        = aws_iam_role.app_role.id
@@ -67,7 +78,9 @@ resource "aws_iam_role_policy" "app_ecr_policy" {
   })
 }
 
-# CloudWatch Logs Policy
+# ============================================
+# CloudWatch Logs Access Policy
+# ============================================
 resource "aws_iam_role_policy" "app_logs_policy" {
   name_prefix = "${var.project_name}-app-logs-"
   role        = aws_iam_role.app_role.id
@@ -86,4 +99,17 @@ resource "aws_iam_role_policy" "app_logs_policy" {
       }
     ]
   })
+}
+
+# ============================================
+# Outputs
+# ============================================
+output "app_role_arn" {
+  description = "IAM role ARN for applications"
+  value       = aws_iam_role.app_role.arn
+}
+
+output "app_role_name" {
+  description = "IAM role name for applications"
+  value       = aws_iam_role.app_role.name
 }

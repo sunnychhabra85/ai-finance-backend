@@ -1,13 +1,13 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: upload-service
+  name: analytics-service
   namespace: ai-finance
   labels:
-    app: upload-service
+    app: analytics-service
     version: v1
 spec:
-  replicas: 1
+  replicas: 2
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -15,21 +15,21 @@ spec:
       maxUnavailable: 0
   selector:
     matchLabels:
-      app: upload-service
+      app: analytics-service
   template:
     metadata:
       labels:
-        app: upload-service
+        app: analytics-service
         version: v1
     spec:
       serviceAccountName: app-sa
       containers:
-      - name: upload-service
-        image: 014071048720.dkr.ecr.us-east-1.amazonaws.com/ai-finance/upload-service:latest
+      - name: analytics-service
+        image: 014071048720.dkr.ecr.us-east-1.amazonaws.com/ai-finance/analytics-service:latest
         imagePullPolicy: Always
         ports:
         - name: http
-          containerPort: 3002
+          containerPort: 3004
           protocol: TCP
         
         envFrom:
@@ -40,34 +40,33 @@ spec:
         
         env:
         - name: SERVICE_NAME
-          value: "upload-service"
+          value: "analytics-service"
         
         resources:
           requests:
-            memory: "128Mi"
-            cpu: "100m"
+            memory: "512Mi"
+            cpu: "250m"
           limits:
-            memory: "256Mi"
-            cpu: "200m"
+            memory: "1Gi"
+            cpu: "500m"
         
-        # Health checks - Commented out until /health endpoint is implemented
-        # livenessProbe:
-        #   httpGet:
-        #     path: /health
-        #     port: 3002
-        #   initialDelaySeconds: 30
-        #   periodSeconds: 10
-        #   timeoutSeconds: 3
-        #   failureThreshold: 3
-        # 
-        # readinessProbe:
-        #   httpGet:
-        #     path: /health
-        #     port: 3002
-        #   initialDelaySeconds: 10
-        #   periodSeconds: 5
-        #   timeoutSeconds: 3
-        #   failureThreshold: 3
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 3004
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 3
+          failureThreshold: 3
+        
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 3004
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 3
         
         securityContext:
           runAsNonRoot: true
@@ -96,5 +95,5 @@ spec:
                 - key: app
                   operator: In
                   values:
-                  - upload-service
+                  - analytics-service
               topologyKey: kubernetes.io/hostname

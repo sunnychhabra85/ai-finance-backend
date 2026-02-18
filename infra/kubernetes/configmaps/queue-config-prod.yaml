@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: queue-config
+  namespace: ai-finance
+  labels:
+    app: ai-finance
+    environment: prod
+    component: queue-configuration
+data:
+  # Prod SQS Queues
+  TRANSACTIONS_QUEUE_URL: "https://sqs.us-east-1.amazonaws.com/014071048720/ai-finance-transactions-queue-prod"
+  ANALYTICS_QUEUE_URL: "https://sqs.us-east-1.amazonaws.com/014071048720/ai-finance-analytics-queue-prod"
+  
+  # Environment info
+  AWS_REGION: "us-east-1"
+  ENVIRONMENT: "prod"
+  
+  # Queue settings (more conservative for prod)
+  QUEUE_POLLING_INTERVAL: "10000"
+  QUEUE_MAX_MESSAGES: "5"
+  QUEUE_WAIT_TIME: "20"

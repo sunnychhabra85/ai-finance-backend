@@ -10,13 +10,15 @@ datasource db {
 }
 
 model Upload {
-  id        String   @id @default(uuid())
+  id        String       @id @default(uuid())
   userId    String
   fileName  String
   fileSize  Int
-  fileHash  String   @unique
+  mimeType  String       @default("application/octet-stream")
+  s3Key     String?      @unique
+  fileHash  String       @unique
   status    UploadStatus
-  createdAt DateTime @default(now())
+  createdAt DateTime     @default(now())
 
   @@index([userId])
 }

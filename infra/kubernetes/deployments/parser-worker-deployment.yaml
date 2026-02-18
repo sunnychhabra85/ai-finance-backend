@@ -35,6 +35,8 @@ spec:
         envFrom:
         - configMapRef:
             name: app-config-dev
+        - configMapRef:
+            name: queue-config
         - secretRef:
             name: app-secrets
         

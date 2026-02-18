@@ -23,6 +23,16 @@ model Transaction {
   @@unique([userId, fingerprint])
 }
 
+model Analytics {
+  id                 String   @id @default(uuid())
+  userId             String   @unique
+  totalTransactions  Int
+  totalAmount        Float
+  avgAmount          Float
+  categoryBreakdown  Json
+  period             String
+  lastUpdated        DateTime @default(now())
+}
 
 model CategorizationMemory {
   id        String @id @default(uuid())
